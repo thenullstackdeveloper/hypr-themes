@@ -1,3 +1,5 @@
+# shellcheck shell=bash disable=SC2034
+# (sourced config, not executed: no shebang; vars are consumed by `theme`)
 # hypr-themes user config.
 # Copy to ~/.config/hypr-themes/config.sh and edit. Sourced by `theme`.
 
