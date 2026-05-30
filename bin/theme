@@ -14,6 +14,7 @@ TEMPLATES_DIR="$REPO_DIR/templates"
 THEMES_DIR="$REPO_DIR/themes"
 USER_CONFIG_DIR="$HOME/.config/hypr-themes"
 ACTIVE_LINK="$USER_CONFIG_DIR/.active"
+WALLPAPERS_CONF="$USER_CONFIG_DIR/wallpapers.conf"
 
 # ------------------------------------------------------------
 #  User config (WALLPAPER_DIR, DEFAULT_THEME, *_CONFIG_DIR)
@@ -41,11 +42,13 @@ THEME_VARS='$ACCENT_PRIMARY $ACCENT_RGB $BORDER_COLOR_1 $BORDER_COLOR_2 $BORDER_
 #  Helpers
 # ------------------------------------------------------------
 
+# True only on a real interactive terminal — gates every prompt so install
+# scripts, keybinds and pipes keep the non-interactive behaviour.
+is_tty() { [[ -t 0 && -t 1 ]]; }
+
 # Map a template's tool dir (first path component) to its destination dir.
 target_for() {
-    local rel="$1"                 # e.g. hypr/modules/config.lua
-    local tool="${rel%%/*}"        # hypr | wofi | dunst
-    local sub="${rel#*/}"          # modules/config.lua | style.css | dunstrc
+    local rel="$1" tool="${1%%/*}" sub="${1#*/}"
     case "$tool" in
         hypr)  echo "$HYPR_CONFIG_DIR/$sub" ;;
         wofi)  echo "$WOFI_CONFIG_DIR/$sub" ;;
@@ -68,6 +71,69 @@ cmd_current() {
     else
         echo "none"
     fi
+}
+
+# Image files at the top level of WALLPAPER_DIR, one per line.
+list_wallpapers() {
+    find "$WALLPAPER_DIR" -maxdepth 1 -type f \
+        \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) \
+        -printf '%f\n' 2>/dev/null | sort
+}
+
+# Per-user wallpaper override for a theme (empty if none). Always exits 0.
+wallpaper_override() {
+    local name="$1" line
+    [[ -f "$WALLPAPERS_CONF" ]] || return 0
+    line="$(grep -m1 "^${name}=" "$WALLPAPERS_CONF" 2>/dev/null || true)"
+    [[ -n "$line" ]] && printf '%s\n' "${line#*=}"
+    return 0
+}
+
+# Persist a per-user wallpaper choice (override file, never the repo theme).
+save_wallpaper_override() {
+    local name="$1" file="$2" tmp
+    mkdir -p "$USER_CONFIG_DIR"
+    if [[ -f "$WALLPAPERS_CONF" ]]; then
+        tmp="$(mktemp)"
+        grep -v "^${name}=" "$WALLPAPERS_CONF" > "$tmp" 2>/dev/null || true
+        mv "$tmp" "$WALLPAPERS_CONF"
+    fi
+    printf '%s=%s\n' "$name" "$file" >> "$WALLPAPERS_CONF"
+}
+
+# Interactive picker. Prompts/menus go to stderr; the chosen filename (if any)
+# is the only thing printed to stdout, so it can be captured with $(...).
+prompt_wallpaper() {
+    local name="$1" desc="$2" ans="" choice="" i
+    {
+        echo
+        echo "Theme '$name'${desc:+ — $desc}"
+        echo "No wallpaper found for this theme in $WALLPAPER_DIR."
+    } >&2
+    read -rp "Associate a wallpaper now? [Y/n] " ans || true
+    case "${ans,,}" in n|no) return 0 ;; esac
+
+    local imgs=()
+    mapfile -t imgs < <(list_wallpapers)
+    if (( ${#imgs[@]} == 0 )); then
+        echo "No image files in $WALLPAPER_DIR — skipping (check WALLPAPER_DIR in config.sh)." >&2
+        return 0
+    fi
+
+    {
+        echo "Images in $WALLPAPER_DIR:"
+        for i in "${!imgs[@]}"; do printf '  %2d) %s\n' "$((i + 1))" "${imgs[$i]}"; done
+    } >&2
+    read -rp "Choose a number, type a filename, or Enter to skip: " choice || true
+    [[ -z "$choice" ]] && return 0
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#imgs[@]} )); then
+        printf '%s\n' "${imgs[$((choice - 1))]}"
+    elif [[ -f "$WALLPAPER_DIR/$choice" ]]; then
+        printf '%s\n' "$choice"
+    else
+        echo "Not found: $choice — skipping." >&2
+    fi
+    return 0
 }
 
 reload_daemons() {
@@ -97,16 +163,40 @@ cmd_apply() {
     source "$theme_file"
     set +a
 
-    # Warn (don't abort) if the wallpaper is missing — keep the previous one.
-    if [[ -n "${WALLPAPER:-}" ]] && [[ ! -f "$WALLPAPER_DIR/$WALLPAPER" ]]; then
-        echo "Warning: wallpaper '$WALLPAPER' not found in $WALLPAPER_DIR" >&2
+    # Resolve the wallpaper: per-user override beats the theme default.
+    local wp="${WALLPAPER:-}" ov
+    ov="$(wallpaper_override "$theme")"
+    [[ -n "$ov" ]] && wp="$ov"
+
+    # If it's missing, offer to pick one (interactive only); otherwise keep
+    # the current wallpaper instead of writing a broken path.
+    local render_wp=1
+    if [[ -z "$wp" || ! -f "$WALLPAPER_DIR/$wp" ]]; then
+        if is_tty; then
+            wp="$(prompt_wallpaper "$theme" "${THEME_DESCRIPTION:-}")"
+            if [[ -n "$wp" ]]; then
+                save_wallpaper_override "$theme" "$wp"
+            else
+                render_wp=0
+            fi
+        else
+            echo "Warning: wallpaper '${wp:-<none>}' not found in $WALLPAPER_DIR — keeping current wallpaper." >&2
+            render_wp=0
+        fi
     fi
+    export WALLPAPER="$wp"
 
     local count=0 tmpl rel target
     while IFS= read -r tmpl; do
         rel="${tmpl#"$TEMPLATES_DIR"/}"   # hypr/modules/config.lua.tmpl
         rel="${rel%.tmpl}"                # hypr/modules/config.lua
         target="$(target_for "$rel")"
+
+        # Skip the wallpaper config when there's no valid wallpaper to set.
+        if [[ "$target" == *"/hyprpaper.conf" && $render_wp -eq 0 ]]; then
+            continue
+        fi
+
         mkdir -p "$(dirname "$target")"
 
         # Pristine backup, created once, restored by uninstall.sh.
@@ -135,6 +225,34 @@ cmd_apply() {
     echo "Theme: $theme ($count templates applied)"
 }
 
+# theme wallpaper [name] — (re)associate a wallpaper for a theme, then apply it.
+cmd_wallpaper() {
+    local theme="${1:-}"
+    [[ -z "$theme" ]] && theme="$(cmd_current)"
+    if [[ "$theme" == "none" || ! -f "$THEMES_DIR/${theme}.theme" ]]; then
+        echo "Usage: theme wallpaper <name>   (no valid theme given)" >&2
+        exit 1
+    fi
+    if ! is_tty; then
+        echo "Error: 'theme wallpaper' needs an interactive terminal." >&2
+        exit 1
+    fi
+
+    local THEME_DESCRIPTION=""
+    # shellcheck source=/dev/null
+    source "$THEMES_DIR/${theme}.theme"
+
+    local wp
+    wp="$(prompt_wallpaper "$theme" "${THEME_DESCRIPTION:-}")"
+    if [[ -n "$wp" ]]; then
+        save_wallpaper_override "$theme" "$wp"
+        echo "Wallpaper for '$theme' set to: $wp"
+        cmd_apply "$theme"
+    else
+        echo "No change."
+    fi
+}
+
 cmd_interactive() {
     local chosen
     chosen="$(cmd_list | wofi --dmenu --prompt theme)" || exit 0
@@ -146,11 +264,12 @@ cmd_help() {
 theme — one-command theme switcher for Hyprland
 
 Usage:
-  theme <name>      Apply the theme <name>
-  theme             Interactive picker (wofi)
-  theme list        List available themes
-  theme current     Show the active theme
-  theme --help      Show this help
+  theme <name>          Apply the theme <name>
+  theme                 Interactive picker (wofi)
+  theme list            List available themes
+  theme current         Show the active theme
+  theme wallpaper [n]   Pick/change the wallpaper for a theme (default: active)
+  theme --help          Show this help
 EOF
 }
 
@@ -160,6 +279,7 @@ EOF
 case "${1:-}" in
     list)        cmd_list ;;
     current)     cmd_current ;;
+    wallpaper)   cmd_wallpaper "${2:-}" ;;
     --help|-h)   cmd_help ;;
     "")          cmd_interactive ;;
     *)           cmd_apply "$1" ;;

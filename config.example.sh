@@ -3,6 +3,10 @@
 
 # Where your wallpapers live. Each theme references an image by name; the
 # script resolves it as ${WALLPAPER_DIR}/${WALLPAPER}.
+#
+# Per-theme wallpaper overrides are stored separately (and managed for you) in
+# ~/.config/hypr-themes/wallpapers.conf — written when you pick a wallpaper via
+# the install prompt or `theme wallpaper <name>`. No need to edit it by hand.
 WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
 
 # Theme applied on install / first run without arguments.
