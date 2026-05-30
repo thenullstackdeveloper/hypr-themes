@@ -1,0 +1,11 @@
+# ============================================================
+#  hyprpaper - wallpaper daemon
+# ============================================================
+# Single wallpaper for all monitors. The image is chosen per theme
+# (WALLPAPER) and resolved against WALLPAPER_DIR from config.sh.
+
+wallpaper {
+    monitor =
+    path = ${WALLPAPER_DIR}/${WALLPAPER}
+    fit_mode = cover
+}
