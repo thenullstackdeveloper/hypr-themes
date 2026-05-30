@@ -8,7 +8,7 @@ set -euo pipefail
 # ------------------------------------------------------------
 #  Paths
 # ------------------------------------------------------------
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 TEMPLATES_DIR="$REPO_DIR/templates"
 THEMES_DIR="$REPO_DIR/themes"
@@ -28,6 +28,10 @@ fi
 : "${HYPR_CONFIG_DIR:=$HOME/.config/hypr}"
 : "${WOFI_CONFIG_DIR:=$HOME/.config/wofi}"
 : "${DUNST_CONFIG_DIR:=$HOME/.config/dunst}"
+
+# WALLPAPER_DIR is consumed by the hyprpaper template, so envsubst (which reads
+# the environment) needs it exported.
+export WALLPAPER_DIR
 
 # Explicit allowlist for envsubst. Only these expand; anything else in a
 # template (e.g. hyprlock's $FAIL / $ATTEMPTS) is left untouched.
