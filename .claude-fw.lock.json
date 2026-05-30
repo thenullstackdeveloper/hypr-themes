@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "presetName": "base",
+  "artifacts": [
+    {
+      "type": "agent",
+      "id": "pr-creator",
+      "sha": "7b2f8c9dbce382308ec70ce9e2a13e8a19e03153a2e45325b67a61d98527e78e"
+    },
+    {
+      "type": "skill",
+      "id": "commit-style",
+      "sha": "6ce2fbe01c2e6b8c0abcf54293ae280d9b963c14cf6c9adfb1ff1767075b5e6a"
+    }
+  ],
+  "settings": {},
+  "settingsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "instructionsHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
