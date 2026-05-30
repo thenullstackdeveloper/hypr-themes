@@ -6,7 +6,7 @@
 ![shellcheck](https://github.com/thenullstackdeveloper/hypr-themes/actions/workflows/shellcheck.yml/badge.svg)
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
 
-<!-- demo GIF here -->
+![hypr-themes switching between the peach and mauve themes](screenshots/demo.gif)
 
 ## ⚠️ Read before installing
 
