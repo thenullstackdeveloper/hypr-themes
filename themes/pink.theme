@@ -1,0 +1,59 @@
+# ============================================================
+#  pink — Catppuccin Mocha base + bright pink accent
+# ============================================================
+# Sourced as shell KEY=VALUE. Templates consume these via envsubst.
+# HEX and RGB duplicated on purpose: envsubst has no functions, and some
+# targets need rgba(R, G, B, A) (hyprlock) while others need #RRGGBB.
+
+# ------------------------------------------------------------
+#  IDENTITY
+# ------------------------------------------------------------
+THEME_NAME="pink"
+THEME_DESCRIPTION="Bright pink accent for sakura / sunset / synthwave wallpapers"
+
+# ------------------------------------------------------------
+#  WALLPAPER (referenced by name; combined with WALLPAPER_DIR from config.sh)
+# ------------------------------------------------------------
+WALLPAPER="cerezos.jpg"
+
+# ------------------------------------------------------------
+#  ACCENT
+# ------------------------------------------------------------
+ACCENT_HEX="f5c2e7"            # Catppuccin Pink, no '#'
+ACCENT_RGB="245, 194, 231"     # decimal, for hyprlock rgba(R, G, B, A)
+ACCENT_PRIMARY="#f5c2e7"       # with '#', for CSS / dunst
+ACCENT_SECONDARY="#cba6f7"     # Mauve — gradient end of the active border
+ACCENT_SECONDARY_HEX="cba6f7"
+
+# Hyprland active_border (two hex with alpha "ee")
+BORDER_COLOR_1="rgba(f5c2e7ee)"
+BORDER_COLOR_2="rgba(cba6f7ee)"
+BORDER_ANGLE="45"
+
+# Glow (decoration.glow.color): accent + alpha 0x80 (50%)
+GLOW_COLOR="rgba(f5c2e780)"
+
+# ------------------------------------------------------------
+#  BASE (backgrounds & text — Catppuccin Mocha, shared across themes)
+# ------------------------------------------------------------
+BG_BASE_HEX="#1e1e2e"
+BG_BASE_RGB="30, 30, 46"
+BG_MANTLE_HEX="#181825"
+BG_MANTLE_RGB="24, 24, 37"
+BG_CRUST_HEX="#11111b"
+BG_SURFACE0_HEX="#313244"      # input fields
+BG_SURFACE1_HEX="#45475a"      # subtle borders
+
+FG_TEXT_HEX="#cdd6f4"
+FG_TEXT_RGB="205, 214, 244"
+FG_SUBTEXT0_HEX="#a6adc8"      # urgency low
+FG_SUBTEXT1_HEX="#bac2de"
+
+# ------------------------------------------------------------
+#  SEMANTIC (alerts)
+# ------------------------------------------------------------
+COLOR_RED_HEX="#f38ba8"        # urgency critical
+COLOR_RED_RGB="243, 139, 168"
+COLOR_GREEN_HEX="#a6e3a1"
+COLOR_YELLOW_HEX="#f9e2af"
+COLOR_OVERLAY_HEX="#6c7086"    # urgency low frame, inactive border
