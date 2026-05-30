@@ -12,8 +12,8 @@ THEME_NAME="yellow"
 THEME_DESCRIPTION="Gold/yellow accent for autumn / desert / sunny wallpapers"
 
 # ------------------------------------------------------------
-#  WALLPAPER (referenced by name; combined with WALLPAPER_DIR from config.sh)
-#  No default yet — set yours with:  theme wallpaper yellow
+#  WALLPAPER — not bundled with the repo. Set it per machine with
+#  "theme wallpaper <name>" (saved in ~/.config/hypr-themes/wallpapers.conf).
 # ------------------------------------------------------------
 WALLPAPER=""
 

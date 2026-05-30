@@ -13,7 +13,8 @@ All notable changes to this project are documented here. Format based on
   (`style.css`) and dunst (`dunstrc`), rendered with `envsubst`.
 - Themes: ten Catppuccin Mocha variants — `peach`, `mauve`, `pink`, `red`,
   `yellow`, `green`, `teal`, `sky`, `blue`, `lavender` (same base, different
-  accent + wallpaper).
+  accent). Wallpapers are not bundled; each machine sets its own per theme with
+  `theme wallpaper` (stored in `wallpapers.conf`).
 - Guided `install.sh` wizard: prompts for `WALLPAPER_DIR` and default theme on a
   real terminal; silent `config.example.sh` copy when non-interactive.
 - Interactive wallpaper association: applying a theme whose image is missing

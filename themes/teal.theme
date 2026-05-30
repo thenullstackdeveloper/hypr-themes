@@ -12,8 +12,8 @@ THEME_NAME="teal"
 THEME_DESCRIPTION="Teal accent for turquoise / water / tropical / aurora wallpapers"
 
 # ------------------------------------------------------------
-#  WALLPAPER (referenced by name; combined with WALLPAPER_DIR from config.sh)
-#  No default yet — set yours with:  theme wallpaper teal
+#  WALLPAPER — not bundled with the repo. Set it per machine with
+#  "theme wallpaper <name>" (saved in ~/.config/hypr-themes/wallpapers.conf).
 # ------------------------------------------------------------
 WALLPAPER=""
 

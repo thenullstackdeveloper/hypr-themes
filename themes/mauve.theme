@@ -12,9 +12,10 @@ THEME_NAME="mauve"
 THEME_DESCRIPTION="Purple mauve accent for fantasy/dreamy wallpapers"
 
 # ------------------------------------------------------------
-#  WALLPAPER (referenced by name; combined with WALLPAPER_DIR from config.sh)
+#  WALLPAPER — not bundled with the repo. Set it per machine with
+#  "theme wallpaper <name>" (saved in ~/.config/hypr-themes/wallpapers.conf).
 # ------------------------------------------------------------
-WALLPAPER="fantasy-morados.jpg"
+WALLPAPER=""
 
 # ------------------------------------------------------------
 #  ACCENT

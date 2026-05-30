@@ -12,8 +12,8 @@ THEME_NAME="lavender"
 THEME_DESCRIPTION="Lavender/periwinkle accent for dawn / soft-purple / misty wallpapers"
 
 # ------------------------------------------------------------
-#  WALLPAPER (referenced by name; combined with WALLPAPER_DIR from config.sh)
-#  No default yet — set yours with:  theme wallpaper lavender
+#  WALLPAPER — not bundled with the repo. Set it per machine with
+#  "theme wallpaper <name>" (saved in ~/.config/hypr-themes/wallpapers.conf).
 # ------------------------------------------------------------
 WALLPAPER=""
 

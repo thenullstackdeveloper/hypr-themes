@@ -12,9 +12,10 @@ THEME_NAME="sky"
 THEME_DESCRIPTION="Sky/cyan accent for clear-sky / glacier / snow wallpapers"
 
 # ------------------------------------------------------------
-#  WALLPAPER (referenced by name; combined with WALLPAPER_DIR from config.sh)
+#  WALLPAPER — not bundled with the repo. Set it per machine with
+#  "theme wallpaper <name>" (saved in ~/.config/hypr-themes/wallpapers.conf).
 # ------------------------------------------------------------
-WALLPAPER="caminante-nieve.jpg"
+WALLPAPER=""
 
 # ------------------------------------------------------------
 #  ACCENT

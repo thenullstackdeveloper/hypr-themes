@@ -12,9 +12,10 @@ THEME_NAME="peach"
 THEME_DESCRIPTION="Warm peach accent for retro/CRT/pixel-art wallpapers"
 
 # ------------------------------------------------------------
-#  WALLPAPER (referenced by name; combined with WALLPAPER_DIR from config.sh)
+#  WALLPAPER — not bundled with the repo. Set it per machine with
+#  "theme wallpaper <name>" (saved in ~/.config/hypr-themes/wallpapers.conf).
 # ------------------------------------------------------------
-WALLPAPER="friki-salon.jpg"
+WALLPAPER=""
 
 # ------------------------------------------------------------
 #  ACCENT

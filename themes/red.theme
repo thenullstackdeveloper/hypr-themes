@@ -17,9 +17,10 @@ THEME_NAME="red"
 THEME_DESCRIPTION="Red accent for sunset / autumn-maple / dramatic wallpapers"
 
 # ------------------------------------------------------------
-#  WALLPAPER (referenced by name; combined with WALLPAPER_DIR from config.sh)
+#  WALLPAPER — not bundled with the repo. Set it per machine with
+#  "theme wallpaper <name>" (saved in ~/.config/hypr-themes/wallpapers.conf).
 # ------------------------------------------------------------
-WALLPAPER="rojizo-luna.jpg"
+WALLPAPER=""
 
 # ------------------------------------------------------------
 #  ACCENT
