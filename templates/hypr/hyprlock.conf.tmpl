@@ -1,0 +1,56 @@
+# ============================================================
+#  hyprlock - lock screen
+# ============================================================
+# Bloque 7. Look minimal Catppuccin Mocha (matching kitty).
+# Refinar en bloque 10 con wallpaper cuando exista.
+
+background {
+    monitor =
+    color = rgba(${BG_MANTLE_RGB}, 1.0)         # Catppuccin Mantle #181825
+}
+
+# Reloj grande
+label {
+    monitor =
+    text = cmd[update:1000] date +"%H:%M"
+    color = rgba(${FG_TEXT_RGB}, 1.0)      # Catppuccin Text
+    font_size = 90
+    font_family = sans-serif
+    position = 0, 200
+    halign = center
+    valign = center
+}
+
+# Fecha debajo del reloj
+label {
+    monitor =
+    text = cmd[update:60000] date +"%A, %d %B"
+    color = rgba(${FG_TEXT_RGB}, 0.7)
+    font_size = 24
+    font_family = sans-serif
+    position = 0, 120
+    halign = center
+    valign = center
+}
+
+# Campo de password centrado
+input-field {
+    monitor =
+    size = 320, 60
+    position = 0, -80
+    halign = center
+    valign = center
+
+    outline_thickness = 2
+    dots_size = 0.3
+    dots_spacing = 0.3
+
+    outer_color = rgba(${ACCENT_RGB}, 1.0)  # Accent
+    inner_color = rgba(${BG_BASE_RGB}, 1.0)     # Base bg
+    font_color  = rgba(${FG_TEXT_RGB}, 1.0)  # Text
+
+    fade_on_empty = false
+    placeholder_text = <i>Password...</i>
+    fail_text = <i>$FAIL ($ATTEMPTS)</i>
+    fail_color = rgba(${COLOR_RED_RGB}, 1.0)   # Catppuccin Red
+}
