@@ -90,8 +90,23 @@ kept and a warning is printed.
 
 ## Themes included
 
-- `peach` — warm orange accent, fits retro / CRT / pixel-art wallpapers.
-- `mauve` — purple accent, fits fantasy / dreamy wallpapers.
+Ten themes, all sharing the Catppuccin Mocha base — they only differ in the accent
+and the wallpaper, so they stay consistent across wofi, dunst and hyprlock.
+
+| Theme | Accent | Pairs with |
+|-------|--------|-----------|
+| `peach` | warm orange | retro / CRT / pixel-art |
+| `mauve` | purple | fantasy / dreamy |
+| `pink` | bright pink | sakura / sunset / synthwave |
+| `red` | red | sunset / autumn-maple / dramatic |
+| `yellow` | gold | autumn / desert / sunny |
+| `green` | green | forest / nature / foliage |
+| `teal` | teal | turquoise / water / tropical / aurora |
+| `sky` | cyan | clear-sky / glacier / snow |
+| `blue` | azure | ocean / night-city / deep-space |
+| `lavender` | periwinkle | dawn / soft-purple / misty |
+
+Some themes ship without a default wallpaper; set one with `theme wallpaper <name>`.
 
 ## Creating your own theme
 
