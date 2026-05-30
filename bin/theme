@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+#
+# theme — one-command theme switcher for Hyprland.
+# Renders templates with envsubst and reloads the relevant daemons.
+#
+set -euo pipefail
+
+# ------------------------------------------------------------
+#  Paths
+# ------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(dirname "$SCRIPT_DIR")"
+TEMPLATES_DIR="$REPO_DIR/templates"
+THEMES_DIR="$REPO_DIR/themes"
+USER_CONFIG_DIR="$HOME/.config/hypr-themes"
+ACTIVE_LINK="$USER_CONFIG_DIR/.active"
+
+# ------------------------------------------------------------
+#  User config (WALLPAPER_DIR, DEFAULT_THEME, *_CONFIG_DIR)
+# ------------------------------------------------------------
+if [[ -f "$USER_CONFIG_DIR/config.sh" ]]; then
+    # shellcheck source=/dev/null
+    source "$USER_CONFIG_DIR/config.sh"
+fi
+
+: "${WALLPAPER_DIR:=$HOME/Pictures/Wallpapers}"
+: "${DEFAULT_THEME:=peach}"
+: "${HYPR_CONFIG_DIR:=$HOME/.config/hypr}"
+: "${WOFI_CONFIG_DIR:=$HOME/.config/wofi}"
+: "${DUNST_CONFIG_DIR:=$HOME/.config/dunst}"
+
+# Explicit allowlist for envsubst. Only these expand; anything else in a
+# template (e.g. hyprlock's $FAIL / $ATTEMPTS) is left untouched.
+THEME_VARS='$ACCENT_PRIMARY $ACCENT_RGB $BORDER_COLOR_1 $BORDER_COLOR_2 $BORDER_ANGLE $GLOW_COLOR $BG_BASE_HEX $BG_BASE_RGB $BG_MANTLE_RGB $BG_SURFACE0_HEX $BG_SURFACE1_HEX $FG_TEXT_HEX $FG_TEXT_RGB $FG_SUBTEXT0_HEX $COLOR_RED_HEX $COLOR_RED_RGB $COLOR_OVERLAY_HEX $WALLPAPER $WALLPAPER_DIR'
+
+# ------------------------------------------------------------
+#  Helpers
+# ------------------------------------------------------------
+
+# Map a template's tool dir (first path component) to its destination dir.
+target_for() {
+    local rel="$1"                 # e.g. hypr/modules/config.lua
+    local tool="${rel%%/*}"        # hypr | wofi | dunst
+    local sub="${rel#*/}"          # modules/config.lua | style.css | dunstrc
+    case "$tool" in
+        hypr)  echo "$HYPR_CONFIG_DIR/$sub" ;;
+        wofi)  echo "$WOFI_CONFIG_DIR/$sub" ;;
+        dunst) echo "$DUNST_CONFIG_DIR/$sub" ;;
+        *)     echo "$HOME/.config/$rel" ;;
+    esac
+}
+
+cmd_list() {
+    local f
+    for f in "$THEMES_DIR"/*.theme; do
+        [[ -e "$f" ]] || continue
+        basename "$f" .theme
+    done
+}
+
+cmd_current() {
+    if [[ -L "$ACTIVE_LINK" ]]; then
+        basename "$(readlink -f "$ACTIVE_LINK")" .theme
+    else
+        echo "none"
+    fi
+}
+
+reload_daemons() {
+    hyprctl reload >/dev/null 2>&1 || true
+    if pkill -x dunst >/dev/null 2>&1; then
+        (sleep 0.5; setsid dunst >/dev/null 2>&1 &)
+    fi
+    if pkill -9 -x hyprpaper >/dev/null 2>&1; then
+        (sleep 0.5; setsid hyprpaper >/dev/null 2>&1 &)
+    fi
+}
+
+cmd_apply() {
+    local theme="$1"
+    local theme_file="$THEMES_DIR/${theme}.theme"
+
+    if [[ ! -f "$theme_file" ]]; then
+        echo "Error: theme '$theme' not found." >&2
+        echo "Available themes:" >&2
+        cmd_list >&2
+        exit 1
+    fi
+
+    # Export theme vars for envsubst.
+    set -a
+    # shellcheck source=/dev/null
+    source "$theme_file"
+    set +a
+
+    # Warn (don't abort) if the wallpaper is missing — keep the previous one.
+    if [[ -n "${WALLPAPER:-}" ]] && [[ ! -f "$WALLPAPER_DIR/$WALLPAPER" ]]; then
+        echo "Warning: wallpaper '$WALLPAPER' not found in $WALLPAPER_DIR" >&2
+    fi
+
+    local count=0 tmpl rel target
+    while IFS= read -r tmpl; do
+        rel="${tmpl#"$TEMPLATES_DIR"/}"   # hypr/modules/config.lua.tmpl
+        rel="${rel%.tmpl}"                # hypr/modules/config.lua
+        target="$(target_for "$rel")"
+        mkdir -p "$(dirname "$target")"
+
+        # Pristine backup, created once, restored by uninstall.sh.
+        if [[ -f "$target" && ! -e "$target.orig" ]]; then
+            cp "$target" "$target.orig"
+        fi
+
+        # Render to a temp file, then validate/move atomically.
+        envsubst "$THEME_VARS" < "$tmpl" > "$target.tmp"
+
+        if [[ "$target" == *.lua ]] && ! luac -p "$target.tmp" 2>/dev/null; then
+            echo "Warning: generated $target is invalid Lua — keeping previous file." >&2
+            rm -f "$target.tmp"
+            continue
+        fi
+
+        mv "$target.tmp" "$target"
+        count=$((count + 1))
+    done < <(find "$TEMPLATES_DIR" -type f -name '*.tmpl' | sort)
+
+    mkdir -p "$USER_CONFIG_DIR"
+    ln -sfn "$theme_file" "$ACTIVE_LINK"
+
+    reload_daemons
+
+    echo "Theme: $theme ($count templates applied)"
+}
+
+cmd_interactive() {
+    local chosen
+    chosen="$(cmd_list | wofi --dmenu --prompt theme)" || exit 0
+    [[ -n "$chosen" ]] && cmd_apply "$chosen"
+}
+
+cmd_help() {
+    cat <<'EOF'
+theme — one-command theme switcher for Hyprland
+
+Usage:
+  theme <name>      Apply the theme <name>
+  theme             Interactive picker (wofi)
+  theme list        List available themes
+  theme current     Show the active theme
+  theme --help      Show this help
+EOF
+}
+
+# ------------------------------------------------------------
+#  Routing
+# ------------------------------------------------------------
+case "${1:-}" in
+    list)        cmd_list ;;
+    current)     cmd_current ;;
+    --help|-h)   cmd_help ;;
+    "")          cmd_interactive ;;
+    *)           cmd_apply "$1" ;;
+esac
