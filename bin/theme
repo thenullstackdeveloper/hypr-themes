@@ -150,7 +150,7 @@ reload_daemons() {
 }
 
 cmd_apply() {
-    local theme="$1"
+    local theme="$1" no_prompt="${2:-}"
     local theme_file="$THEMES_DIR/${theme}.theme"
 
     if [[ ! -f "$theme_file" ]]; then
@@ -175,7 +175,7 @@ cmd_apply() {
     # the current wallpaper instead of writing a broken path.
     local render_wp=1
     if [[ -z "$wp" || ! -f "$WALLPAPER_DIR/$wp" ]]; then
-        if is_tty; then
+        if is_tty && [[ "$no_prompt" != noprompt ]]; then
             wp="$(prompt_wallpaper "$theme" "${THEME_DESCRIPTION:-}")"
             if [[ -n "$wp" ]]; then
                 save_wallpaper_override "$theme" "$wp"
@@ -256,10 +256,60 @@ cmd_wallpaper() {
     fi
 }
 
+# Desktop notification of the applied theme (replaces its own previous one).
+notify_theme() {
+    if command -v dunstify >/dev/null 2>&1; then
+        dunstify -r 9001 -t 1500 "hypr-themes" "Applied: $1" >/dev/null 2>&1 || true
+    elif command -v notify-send >/dev/null 2>&1; then
+        notify-send -t 1500 "hypr-themes" "Applied: $1" >/dev/null 2>&1 || true
+    fi
+}
+
+# Looping wofi picker: apply on pick and reopen, so you can browse several.
+# "keep" stays on the current one; "cancel" / Escape reverts to where you started.
 cmd_interactive() {
-    local chosen
-    chosen="$(cmd_list | wofi --dmenu --prompt theme)" || exit 0
-    [[ -n "$chosen" ]] && cmd_apply "$chosen"
+    local start chosen cur changed=0 prompt
+    start="$(cmd_current)"
+    while true; do
+        cur="$(cmd_current)"
+        # The "keep" item and the revert hint only show once something changed —
+        # on first open there is nothing to keep or revert.
+        if (( changed )); then
+            prompt="theme (now: $cur) · Esc=revert"
+            chosen="$( { printf '%s\n' '✓ keep this theme'; cmd_list; } \
+                | wofi --dmenu --cache-file=/dev/null --prompt "$prompt" )" || chosen='__esc__'
+        else
+            prompt="theme (now: $cur)"
+            chosen="$( cmd_list | wofi --dmenu --cache-file=/dev/null --prompt "$prompt" )" || chosen='__esc__'
+        fi
+        case "$chosen" in
+            __esc__)
+                if (( changed )) && [[ "$start" != none && "$start" != "$(cmd_current)" ]]; then
+                    cmd_apply "$start" noprompt >/dev/null
+                fi
+                break ;;
+            '✓ keep this theme'|'') break ;;
+            *)
+                if [[ -f "$THEMES_DIR/${chosen}.theme" ]]; then
+                    cmd_apply "$chosen" noprompt >/dev/null
+                    notify_theme "$chosen"
+                    changed=1
+                fi ;;
+        esac
+    done
+}
+
+# Apply the next/previous theme in the (sorted) list, wrapping around.
+cmd_cycle() {
+    local dir="$1" themes=() i cur idx=0 n
+    mapfile -t themes < <(cmd_list)
+    n=${#themes[@]}
+    (( n == 0 )) && { echo "No themes found." >&2; exit 1; }
+    cur="$(cmd_current)"
+    for i in "${!themes[@]}"; do [[ "${themes[$i]}" == "$cur" ]] && idx="$i"; done
+    if [[ "$dir" == prev ]]; then idx=$(( (idx - 1 + n) % n )); else idx=$(( (idx + 1) % n )); fi
+    cmd_apply "${themes[$idx]}" noprompt
+    notify_theme "${themes[$idx]}"
 }
 
 cmd_help() {
@@ -268,7 +318,9 @@ theme — one-command theme switcher for Hyprland
 
 Usage:
   theme <name>          Apply the theme <name>
-  theme                 Interactive picker (wofi)
+  theme                 Looping picker (wofi): browse, keep or revert
+  theme next            Apply the next theme (wraps); good for a keybind
+  theme prev            Apply the previous theme (wraps)
   theme list            List available themes
   theme current         Show the active theme
   theme wallpaper [n]   Pick/change the wallpaper for a theme (default: active)
@@ -282,6 +334,8 @@ EOF
 case "${1:-}" in
     list)        cmd_list ;;
     current)     cmd_current ;;
+    next)        cmd_cycle next ;;
+    prev)        cmd_cycle prev ;;
     wallpaper)   cmd_wallpaper "${2:-}" ;;
     --help|-h)   cmd_help ;;
     "")          cmd_interactive ;;

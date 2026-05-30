@@ -59,7 +59,9 @@ command. No drift.
 
 ```
 theme <name>          Apply the theme <name>
-theme                 Interactive picker (wofi)
+theme                 Looping picker (wofi): browse, then keep or revert
+theme next            Apply the next theme (wraps) — bind it to a key
+theme prev            Apply the previous theme (wraps)
 theme list            List available themes
 theme current         Show the active theme
 theme wallpaper [n]   Pick/change the wallpaper for a theme (default: active)
@@ -161,7 +163,9 @@ session.
 In your binds (not managed by this repo):
 
 ```lua
-hl.bind(mod .. " + SHIFT + T", hl.dsp.exec_cmd("theme"))
+hl.bind(mod .. " + SHIFT + T", hl.dsp.exec_cmd("theme"))       -- looping picker
+hl.bind(mod .. " + SHIFT + N", hl.dsp.exec_cmd("theme next"))  -- cycle forward
+hl.bind(mod .. " + SHIFT + P", hl.dsp.exec_cmd("theme prev"))  -- cycle back
 ```
 
 ## How it works

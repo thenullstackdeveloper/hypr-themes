@@ -7,8 +7,10 @@ All notable changes to this project are documented here. Format based on
 ## [Unreleased]
 
 ### Added
-- `theme` CLI: apply a theme, `list`, `current`, `wallpaper`, interactive wofi
-  picker, `--help`.
+- `theme` CLI: apply a theme, `list`, `current`, `wallpaper`, `--help`, and theme
+  browsing — a looping wofi picker (apply on pick and reopen, with keep / revert)
+  plus `theme next` / `theme prev` to cycle (with a desktop notification), ideal
+  for a keybind.
 - Templates for Hyprland (`config.lua`, `hyprlock.conf`, `hyprpaper.conf`), wofi
   (`style.css`) and dunst (`dunstrc`), rendered with `envsubst`.
 - Themes: ten Catppuccin Mocha variants — `peach`, `mauve`, `pink`, `red`,
