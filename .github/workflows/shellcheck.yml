@@ -11,4 +11,4 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: './bin'
-          additional_files: 'install.sh uninstall.sh config.example.sh'
+          additional_files: 'install.sh uninstall.sh config.example.sh scripts/check-deps.sh scripts/record-demo.sh'

@@ -37,10 +37,15 @@ theme               # interactive picker (wofi)
 theme peach         # apply directly
 ```
 
-`install.sh` is a small wizard: it checks dependencies, asks where your wallpapers
-live and which theme to default to, symlinks `theme` into `~/.local/bin`, and
-applies your default theme. Run it without a terminal (pipe/CI) and it falls back
-to copying `config.example.sh` silently.
+`install.sh` is a small wizard: it checks dependencies (via `scripts/check-deps.sh`,
+which you can also run on its own), asks where your wallpapers live and which theme
+to default to, symlinks `theme` into `~/.local/bin`, and applies your default
+theme. Run it without a terminal (pipe/CI) and it falls back to copying
+`config.example.sh` silently.
+
+```bash
+./scripts/check-deps.sh     # required vs recommended tools, with package hints
+```
 
 ## Why
 

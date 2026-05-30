@@ -17,8 +17,12 @@ All notable changes to this project are documented here. Format based on
 - Interactive wallpaper association: applying a theme whose image is missing
   offers a picker of the files in `WALLPAPER_DIR`; the choice is saved per-user in
   `wallpapers.conf` and can be changed with `theme wallpaper <name>`.
+- `scripts/check-deps.sh`: a reusable dependency checker (required vs recommended,
+  with per-tool purpose and package hints) that `install.sh` runs before anything
+  else, and that you can run standalone as a diagnostic.
 - `uninstall.sh` and `config.example.sh` for user configuration.
-- shellcheck CI workflow.
+- shellcheck CI workflow (covers `bin/`, the install/uninstall scripts and
+  `scripts/`).
 
 ### Safety
 - `envsubst` runs against an explicit variable allowlist (no accidental expansion

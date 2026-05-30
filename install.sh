@@ -81,13 +81,9 @@ run_stepper() {
     echo "────────────────────────────────────────────────────"
 }
 
-# 1. Dependencies
-missing=()
-for cmd in hyprctl envsubst wofi dunst hyprpaper luac; do
-    command -v "$cmd" >/dev/null 2>&1 || missing+=("$cmd")
-done
-if (( ${#missing[@]} )); then
-    echo "Error: missing dependencies: ${missing[*]}" >&2
+# 1. Dependencies (delegated to the reusable checker, run before anything else)
+if ! "$REPO_DIR/scripts/check-deps.sh"; then
+    echo "Install the missing required dependency above, then re-run ./install.sh." >&2
     exit 1
 fi
 
