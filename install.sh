@@ -8,10 +8,54 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 THEMES_DIR="$REPO_DIR/themes"
+SKELETON_DIR="$REPO_DIR/skeleton"
 USER_CONFIG_DIR="$HOME/.config/hypr-themes"
 BIN_DIR="$HOME/.local/bin"
 
 is_tty() { [[ -t 0 && -t 1 ]]; }
+
+# Place one base config: copy the skeleton if the user has none, otherwise leave
+# their file alone and (when it lacks the include) print how to wire it up. The
+# theme only ever writes the generated partials, never these base files.
+#   $1 skeleton-relative path   $2 target path
+#   $3 string proving the include is present ('' = none needed)   $4 how-to hint
+place_skeleton() {
+    local src="$SKELETON_DIR/$1" target="$2" needle="$3" hint="$4"
+    mkdir -p "$(dirname "$target")"
+    if [[ ! -e "$target" ]]; then
+        cp "$src" "$target"
+        echo "  created $target"
+    elif [[ -n "$needle" ]] && ! grep -qF "$needle" "$target"; then
+        echo "  NOTE: $target exists — to theme it, $hint"
+    fi
+}
+
+deploy_skeletons() {
+    : "${HYPR_CONFIG_DIR:=$HOME/.config/hypr}"
+    : "${WOFI_CONFIG_DIR:=$HOME/.config/wofi}"
+    : "${DUNST_CONFIG_DIR:=$HOME/.config/dunst}"
+    echo "Base configs (yours — never overwritten):"
+    place_skeleton hypr/modules/config.lua "$HYPR_CONFIG_DIR/modules/config.lua" \
+        'require("modules/theme")' \
+        'add  local theme = require("modules/theme")  and use theme.border_1/border_2/border_angle/glow'
+    # shellcheck disable=SC2016  # $lock_* are literal hyprlock var names shown to the user
+    place_skeleton hypr/hyprlock.conf "$HYPR_CONFIG_DIR/hyprlock.conf" \
+        'hyprlock-theme.conf' \
+        'add  source = ~/.config/hypr/hyprlock-theme.conf  and use $lock_bg/$lock_text/$lock_accent/...'
+    # wofi needs special handling: GTK loads the CSS as a data blob with no base
+    # dir, so the @import must be absolute. Bake this machine's path in on copy.
+    local wofi_css="$WOFI_CONFIG_DIR/style.css" colors_abs="$WOFI_CONFIG_DIR/colors.css"
+    mkdir -p "$WOFI_CONFIG_DIR"
+    if [[ ! -e "$wofi_css" ]]; then
+        sed "s|@COLORS_CSS@|$colors_abs|" "$SKELETON_DIR/wofi/style.css" > "$wofi_css"
+        echo "  created $wofi_css"
+    elif ! grep -qF "colors.css" "$wofi_css"; then
+        echo "  NOTE: $wofi_css exists — to theme it, add  @import url(\"$colors_abs\");  (absolute path required) and use @bg_base/@accent/@fg_text/..."
+    fi
+    place_skeleton dunst/dunstrc "$DUNST_CONFIG_DIR/dunstrc" \
+        '' \
+        'nothing to do — dunst auto-loads the dunstrc.d/ drop-in'
+}
 
 list_themes() {
     local f
@@ -111,9 +155,12 @@ if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
     echo "Note: $BIN_DIR is not in PATH. Add it to your shell rc."
 fi
 
-# 5. Apply default theme
+# 5. Base configs (skeletons) — copied only when absent, never overwritten
 # shellcheck source=/dev/null
 source "$USER_CONFIG_DIR/config.sh"
+deploy_skeletons
+
+# 6. Apply default theme
 "$REPO_DIR/bin/theme" "${DEFAULT_THEME:-peach}"
 
 echo "hypr-themes installed. Use 'theme <name>' or 'theme' for the interactive picker."

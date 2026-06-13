@@ -6,6 +6,26 @@
 
 Generado en `2026-05-27` a partir del bloque 12 del [[Hyprland CachyOS Setup]] (vault Obsidian).
 
+> **Revisión 2026-06-13 — arquitectura no destructiva (parciales).**
+> El diseño original (abajo) regeneraba *el config completo* de cada app desde una
+> plantilla (`config.lua`, `hyprlock.conf`, `style.css`, `dunstrc`), por lo que la
+> herramienta era dueña de ficheros que también contienen ajustes personales
+> (`kb_layout`/`kb_variant`, gaps, fuentes…) y los pisaba en cada cambio de tema.
+>
+> Ahora la herramienta **solo genera un parcial de color por app** y el config del
+> usuario lo incluye con el mecanismo nativo de cada uno:
+> - Hyprland → `modules/theme.lua` (`require`)
+> - hyprlock → `hyprlock-theme.conf` (`source =`)
+> - wofi → `colors.css` (`@import`, ruta **absoluta**: wofi pasa el CSS a GTK como
+>   blob sin directorio base, así que un `@import` relativo no resuelve)
+> - dunst → `dunstrc.d/99-hypr-themes.conf` (drop-in, sin tocar `dunstrc`)
+> - hyprpaper → sigue como plantilla completa (solo contiene el wallpaper)
+>
+> Los configs base se entregan como **skeletons** (`skeleton/`) que `install.sh`
+> copia solo si no existen; si existen, no los toca y muestra la línea a añadir.
+> Esto invalida la meta de "regenerar bit-identical" de §5 y la lista de plantillas
+> de §5/anexo: las plantillas de fichero completo ya no existen.
+
 ---
 
 ## 1. Resumen ejecutivo
