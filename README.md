@@ -8,24 +8,36 @@
 
 ![hypr-themes switching between the peach and mauve themes](screenshots/demo.gif)
 
-## ⚠️ Read before installing
+## How it works (read before installing)
 
-This is a **personal theming setup made portable**, not a drop-in for every rig.
-Two things to know up front:
+hypr-themes **never overwrites your configs.** Each theme switch regenerates a
+small, tool-owned **color partial** per app; your own config files pull those in
+through each app's native include mechanism and are left untouched:
 
-- **It overwrites your Hyprland/wofi/dunst configs.** Applying a theme regenerates
-  `config.lua`, `hyprlock.conf`, `hyprpaper.conf`, `wofi/style.css` and
-  `dunst/dunstrc` from this repo's templates. The templates are *my* configs with
-  the colors parameterized — installing them replaces yours. A pristine `.orig`
-  backup of every file is made on first apply and restored by `uninstall.sh`, so
-  it's reversible, but don't run it blind on a setup you care about.
-- **Wallpapers are not bundled.** The repo stays light; themes reference an image
-  *by name*. You point `WALLPAPER_DIR` at your own folder, and the installer (or
-  `theme wallpaper`) helps you associate one. A theme with no matching image just
-  keeps your current wallpaper — it never breaks.
+| App       | Generated partial (tool-owned)        | Your config includes it via            |
+|-----------|---------------------------------------|----------------------------------------|
+| Hyprland  | `hypr/modules/theme.lua`              | `local theme = require("modules/theme")` |
+| hyprlock  | `hypr/hyprlock-theme.conf`            | `source = ~/.config/hypr/hyprlock-theme.conf` |
+| wofi      | `wofi/colors.css`                     | `@import url(".../colors.css")` (absolute) |
+| dunst     | `dunst/dunstrc.d/99-hypr-themes.conf` | drop-in — loaded automatically, no edit |
+| hyprpaper | `hypr/hyprpaper.conf`                 | *(fully managed — wallpaper only)*     |
 
-If you want the switching mechanism but your own configs, fork it and replace the
-files in `templates/` with yours (keep the `${VAR}` placeholders).
+So your `kb_layout`, gaps, blur, fonts, geometry — anything that isn't a theme
+color — stays exactly where you put it, switch after switch.
+
+On install, if you don't already have one of these base configs, a ready-made
+**skeleton** (with the include line wired up) is copied from `skeleton/`. If you
+*do* have one, it's left alone and the installer prints the single line to add.
+The only fully managed file is `hyprpaper.conf` (it holds nothing but the
+wallpaper path); a pristine `.orig` backup of it is kept and restored by
+`uninstall.sh`.
+
+> **Wallpapers are not bundled.** The repo stays light; themes reference an image
+> *by name*. Point `WALLPAPER_DIR` at your own folder, and the installer (or
+> `theme wallpaper`) helps you associate one. A theme with no matching image
+> keeps your current wallpaper — it never breaks.
+
+To ship your own look, edit the `.theme` files (colors) — not your configs.
 
 ## Quick start
 
@@ -52,8 +64,8 @@ theme. Run it without a terminal (pipe/CI) and it falls back to copying
 Changing the color palette of a Hyprland setup means editing five files by hand
 (`config.lua` border + glow, `hyprlock.conf`, `hyprpaper.conf`, `wofi/style.css`,
 `dunst/dunstrc`). Forget one and your visuals drift. hypr-themes keeps a single
-source of truth per theme and regenerates every config from templates. One
-command. No drift.
+source of truth per theme and regenerates one small color partial per app — never
+your configs. One command. No drift, no clobbered settings.
 
 ## Commands
 
@@ -171,11 +183,13 @@ hl.bind(mod .. " + SHIFT + P", hl.dsp.exec_cmd("theme prev"))  -- cycle back
 ## How it works
 
 A `.theme` file is a set of `KEY=VALUE` color variables. `theme` sources it and
-renders each `templates/**/*.tmpl` with `envsubst` into your live config, then
-reloads the affected daemons. Safety built in: an **envsubst allowlist** (only
-theme vars expand, so tokens like hyprlock's `$FAIL` survive), **pristine `.orig`
-backups**, and **`luac -p` validation** of the generated `config.lua` before it
-replaces the live file.
+renders each `templates/**/*.tmpl` with `envsubst` into a tool-owned **color
+partial** (`theme.lua`, `colors.css`, `hyprlock-theme.conf`, the dunst drop-in),
+then reloads the affected daemons. Your base configs include those partials and
+are never written. Safety built in: an **envsubst allowlist** (only theme vars
+expand, so tokens like hyprlock's `$FAIL` survive), **pristine `.orig` backups**
+of any managed file, and **`luac -p` validation** of the generated `theme.lua`
+before it replaces the live partial.
 
 ## License
 

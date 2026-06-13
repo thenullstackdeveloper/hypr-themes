@@ -11,8 +11,16 @@ All notable changes to this project are documented here. Format based on
   browsing — a looping wofi picker (apply on pick and reopen, with keep / revert)
   plus `theme next` / `theme prev` to cycle (with a desktop notification), ideal
   for a keybind.
-- Templates for Hyprland (`config.lua`, `hyprlock.conf`, `hyprpaper.conf`), wofi
-  (`style.css`) and dunst (`dunstrc`), rendered with `envsubst`.
+- Non-destructive theming: each switch regenerates a small tool-owned **color
+  partial** per app — `hypr/modules/theme.lua`, `hypr/hyprlock-theme.conf`,
+  `wofi/colors.css`, the `dunst/dunstrc.d/99-hypr-themes.conf` drop-in — which your
+  own configs include via `require` / `source` / `@import` / drop-in. Your base
+  configs (`config.lua`, `hyprlock.conf`, `style.css`, `dunstrc`) are never
+  overwritten, so non-color settings (`kb_layout`, gaps, fonts, geometry…) survive
+  every switch. `hyprpaper.conf` stays fully managed (it holds only the wallpaper).
+- `skeleton/`: ready-made base configs with the include line wired up. `install.sh`
+  copies one only when you don't already have that config; if you do, it leaves it
+  alone and prints the single line to add.
 - Themes: ten Catppuccin Mocha variants — `peach`, `mauve`, `pink`, `red`,
   `yellow`, `green`, `teal`, `sky`, `blue`, `lavender` (same base, different
   accent). Wallpapers are not bundled; each machine sets its own per theme with
@@ -33,7 +41,7 @@ All notable changes to this project are documented here. Format based on
 - `envsubst` runs against an explicit variable allowlist (no accidental expansion
   of unrelated environment variables).
 - Pristine `.orig` backups created once per target file; restored by `uninstall.sh`.
-- Generated `config.lua` is validated with `luac -p` before replacing the live file.
+- Generated `theme.lua` is validated with `luac -p` before replacing the live partial.
 - A missing wallpaper never writes a broken path: `hyprpaper.conf` is left
   untouched and the current wallpaper is kept.
 - All prompts are gated on a real TTY, so `install.sh`, keybinds and pipes keep
