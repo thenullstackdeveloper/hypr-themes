@@ -13,7 +13,7 @@
 @import url("@COLORS_CSS@");
 
 * {
-    font-family: "JetBrainsMono Nerd Font", "Inter", sans-serif;
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", "FontAwesome", "Inter", sans-serif;
     font-size: 14px;
     border: none;
     box-shadow: none;

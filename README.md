@@ -39,6 +39,11 @@ wallpaper path); a pristine `.orig` backup of it is kept and restored by
 > `theme wallpaper`) helps you associate one. A theme with no matching image
 > keeps your current wallpaper — it never breaks.
 
+> **A Nerd Font is recommended.** waybar/wofi icons need one (e.g. install
+> `ttf-jetbrains-mono-nerd`). The skeleton font stacks fall back to FontAwesome and
+> then a generic font, so without a Nerd Font text still renders — only the icons
+> show as boxes.
+
 To ship your own look, edit the `.theme` files (colors) — not your configs.
 
 ## Quick start

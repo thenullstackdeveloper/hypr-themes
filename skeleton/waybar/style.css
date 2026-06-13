@@ -11,7 +11,10 @@
 @import url("@COLORS_CSS@");
 
 * {
-    font-family: "JetBrainsMono Nerd Font", "FontAwesome", "Roboto", sans-serif;
+    /* Prefer a Nerd Font (icons + text); fall back to an icon-only Nerd Font and
+       FontAwesome for the glyphs, then a generic monospace so text never breaks.
+       Without any Nerd/icon font the bar still works — only icons show as boxes. */
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", "FontAwesome", monospace;
     font-size: 13px;
     min-height: 0;
 }
