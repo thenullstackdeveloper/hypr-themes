@@ -52,3 +52,8 @@ All notable changes to this project are documented here. Format based on
   `each_partial_target`, `each_base_target`). `install.sh` and `uninstall.sh` now
   derive the partial/skeleton paths from `templates/` and `skeleton/` instead of
   hardcoding them, so adding a target tool is just dropping a template.
+- bats test suite (`tests/`) with a CI workflow: path mapping, a render smoke test
+  that guards the `THEME_VARS` allowlist, cycle/override logic, and sandboxed
+  apply/uninstall. `bin/theme` gained a `main` guard so it can be sourced for unit
+  tests, and `luac` validation now only runs when `luac` is installed (it is a
+  recommended, not required, dependency).

@@ -203,7 +203,8 @@ cmd_apply() {
         # Render to a temp file, then validate/move atomically.
         envsubst "$THEME_VARS" < "$tmpl" > "$target.tmp"
 
-        if [[ "$target" == *.lua ]] && ! luac -p "$target.tmp" 2>/dev/null; then
+        if [[ "$target" == *.lua ]] && command -v luac >/dev/null 2>&1 \
+            && ! luac -p "$target.tmp" 2>/dev/null; then
             echo "Warning: generated $target is invalid Lua — keeping previous file." >&2
             rm -f "$target.tmp"
             continue
@@ -324,13 +325,21 @@ EOF
 # ------------------------------------------------------------
 #  Routing
 # ------------------------------------------------------------
-case "${1:-}" in
-    list)        cmd_list ;;
-    current)     cmd_current ;;
-    next)        cmd_cycle next ;;
-    prev)        cmd_cycle prev ;;
-    wallpaper)   cmd_wallpaper "${2:-}" ;;
-    --help|-h)   cmd_help ;;
-    "")          cmd_interactive ;;
-    *)           cmd_apply "$1" ;;
-esac
+main() {
+    case "${1:-}" in
+        list)        cmd_list ;;
+        current)     cmd_current ;;
+        next)        cmd_cycle next ;;
+        prev)        cmd_cycle prev ;;
+        wallpaper)   cmd_wallpaper "${2:-}" ;;
+        --help|-h)   cmd_help ;;
+        "")          cmd_interactive ;;
+        *)           cmd_apply "$1" ;;
+    esac
+}
+
+# Dispatch only when executed, not when sourced — so tests can source this file
+# for its functions without running a command.
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi

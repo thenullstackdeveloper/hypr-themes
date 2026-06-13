@@ -4,6 +4,7 @@
 > border, glow, wofi, dunst, hyprlock and wallpaper.
 
 ![shellcheck](https://github.com/thenullstackdeveloper/hypr-themes/actions/workflows/shellcheck.yml/badge.svg)
+![tests](https://github.com/thenullstackdeveloper/hypr-themes/actions/workflows/tests.yml/badge.svg)
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ![hypr-themes switching between the peach and mauve themes](screenshots/demo.gif)
@@ -190,6 +191,21 @@ are never written. Safety built in: an **envsubst allowlist** (only theme vars
 expand, so tokens like hyprlock's `$FAIL` survive), **pristine `.orig` backups**
 of any managed file, and **`luac -p` validation** of the generated `theme.lua`
 before it replaces the live partial.
+
+## Tests
+
+The suite is [bats](https://github.com/bats-core/bats-core) and runs in CI:
+
+```bash
+bats tests/          # needs: bats, envsubst (luac optional, for the Lua check)
+```
+
+- `paths.bats` — the `lib/paths.sh` path mapping and derivation.
+- `render.bats` — every theme renders every template with no unsubstituted
+  `${VAR}` (guards the `THEME_VARS` allowlist), and the Lua partial stays valid.
+- `cli.bats` — `next`/`prev` cycle math and wallpaper-override resolution.
+- `integration.bats` — apply and uninstall against a sandbox `$HOME` with stubbed
+  daemons (partials written, `.orig` restore vs delete).
 
 ## License
 
