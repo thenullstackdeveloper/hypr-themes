@@ -194,11 +194,22 @@ before it replaces the live partial.
 
 ## Tests
 
-The suite is [bats](https://github.com/bats-core/bats-core) and runs in CI:
+Tests use [**bats**](https://github.com/bats-core/bats-core) (Bash Automated
+Testing System) — a small test runner for shell scripts, like pytest for Bash.
+Each test runs isolated; `run <cmd>` captures the exit code and output to assert
+on. The suite also runs in CI on every push.
+
+Install bats, then run the suite from the repo root:
 
 ```bash
-bats tests/          # needs: bats, envsubst (luac optional, for the Lua check)
+# Arch/CachyOS: sudo pacman -S bats     Debian/Ubuntu: sudo apt install bats
+# or, without root, into ~/.local:
+#   git clone https://github.com/bats-core/bats-core && bats-core/install.sh ~/.local
+
+bats tests/          # also needs envsubst; luac is optional (for the Lua check)
 ```
+
+What each file covers:
 
 - `paths.bats` — the `lib/paths.sh` path mapping and derivation.
 - `render.bats` — every theme renders every template with no unsubstituted
