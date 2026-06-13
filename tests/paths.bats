@@ -30,20 +30,22 @@ setup() {
 @test "each_partial_target lists every template destination" {
     run each_partial_target
     [ "$status" -eq 0 ]
-    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 5 ]
+    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 6 ]
     [[ "$output" == *"/cfg/hypr/modules/theme.lua"* ]]
     [[ "$output" == *"/cfg/hypr/hyprlock-theme.conf"* ]]
     [[ "$output" == *"/cfg/hypr/hyprpaper.conf"* ]]
     [[ "$output" == *"/cfg/wofi/colors.css"* ]]
+    [[ "$output" == *"$HOME/.config/waybar/colors.css"* ]]
     [[ "$output" == *"/cfg/dunst/dunstrc.d/99-hypr-themes.conf"* ]]
 }
 
 @test "each_base_target lists every skeleton destination" {
     run each_base_target
     [ "$status" -eq 0 ]
-    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 4 ]
+    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 5 ]
     [[ "$output" == *"/cfg/hypr/modules/config.lua"* ]]
     [[ "$output" == *"/cfg/hypr/hyprlock.conf"* ]]
     [[ "$output" == *"/cfg/wofi/style.css"* ]]
+    [[ "$output" == *"$HOME/.config/waybar/style.css"* ]]
     [[ "$output" == *"/cfg/dunst/dunstrc"* ]]
 }

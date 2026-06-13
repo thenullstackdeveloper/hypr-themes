@@ -21,6 +21,10 @@ All notable changes to this project are documented here. Format based on
 - `skeleton/`: ready-made base configs with the include line wired up. `install.sh`
   copies one only when you don't already have that config; if you do, it leaves it
   alone and prints the single line to add.
+- waybar support: a floating-islands skeleton (`waybar/style.css`) themed from a
+  generated `waybar/colors.css` partial; `theme <name>` recolors the bar live
+  (SIGUSR2 reload). Added by dropping a template + skeleton — the first use of the
+  `lib/paths.sh` "add a tool = drop a template" extensibility.
 - Themes: ten Catppuccin Mocha variants — `peach`, `mauve`, `pink`, `red`,
   `yellow`, `green`, `teal`, `sky`, `blue`, `lavender` (same base, different
   accent). Wallpapers are not bundled; each machine sets its own per theme with

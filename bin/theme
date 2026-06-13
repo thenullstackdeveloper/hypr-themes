@@ -39,7 +39,7 @@ export WALLPAPER_DIR
 # Single quotes are intentional: envsubst needs the literal variable names, not
 # their values — so this must NOT expand here.
 # shellcheck disable=SC2016
-THEME_VARS='$ACCENT_PRIMARY $ACCENT_RGB $BORDER_COLOR_1 $BORDER_COLOR_2 $BORDER_ANGLE $GLOW_COLOR $BG_BASE_HEX $BG_BASE_RGB $BG_MANTLE_RGB $BG_SURFACE0_HEX $BG_SURFACE1_HEX $FG_TEXT_HEX $FG_TEXT_RGB $FG_SUBTEXT0_HEX $COLOR_RED_HEX $COLOR_RED_RGB $COLOR_OVERLAY_HEX $WALLPAPER $WALLPAPER_DIR'
+THEME_VARS='$ACCENT_PRIMARY $ACCENT_RGB $BORDER_COLOR_1 $BORDER_COLOR_2 $BORDER_ANGLE $GLOW_COLOR $BG_BASE_HEX $BG_BASE_RGB $BG_MANTLE_HEX $BG_MANTLE_RGB $BG_SURFACE0_HEX $BG_SURFACE1_HEX $FG_TEXT_HEX $FG_TEXT_RGB $FG_SUBTEXT0_HEX $COLOR_RED_HEX $COLOR_RED_RGB $COLOR_OVERLAY_HEX $WALLPAPER $WALLPAPER_DIR'
 
 # ------------------------------------------------------------
 #  Helpers
@@ -140,6 +140,8 @@ reload_daemons() {
     if pkill -9 -x hyprpaper >/dev/null 2>&1; then
         (sleep 0.5; setsid hyprpaper >/dev/null 2>&1 &)
     fi
+    # waybar re-reads its CSS (the generated colors.css) on SIGUSR2.
+    pkill -SIGUSR2 -x waybar >/dev/null 2>&1 || true
 }
 
 cmd_apply() {

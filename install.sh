@@ -36,6 +36,23 @@ place_skeleton() {
     fi
 }
 
+# A CSS skeleton whose colors come from a sibling colors.css imported with an
+# ABSOLUTE path (GTK gives waybar/wofi the CSS as a data blob with no base dir,
+# so a relative @import can't be resolved). Bake this machine's path in on copy.
+#   $1 skeleton-relative path to the style.css
+place_css_skeleton() {
+    local rel="$1" style colors_abs
+    style="$(target_for "$rel")"
+    colors_abs="$(target_for "$(dirname "$rel")/colors.css")"
+    mkdir -p "$(dirname "$style")"
+    if [[ ! -e "$style" ]]; then
+        sed "s|@COLORS_CSS@|$colors_abs|" "$SKELETON_DIR/$rel" > "$style"
+        echo "  created $style"
+    elif ! grep -qF "colors.css" "$style"; then
+        echo "  NOTE: $style exists — to theme it, add  @import url(\"$colors_abs\");  (absolute path required)."
+    fi
+}
+
 deploy_skeletons() {
     : "${HYPR_CONFIG_DIR:=$HOME/.config/hypr}"
     : "${WOFI_CONFIG_DIR:=$HOME/.config/wofi}"
@@ -48,18 +65,10 @@ deploy_skeletons() {
     place_skeleton hypr/hyprlock.conf \
         'hyprlock-theme.conf' \
         'add  source = ~/.config/hypr/hyprlock-theme.conf  and use $lock_bg/$lock_text/$lock_accent/...'
-    # wofi needs special handling: GTK loads the CSS as a data blob with no base
-    # dir, so the @import must be absolute. Bake this machine's path in on copy.
-    local wofi_css colors_abs
-    wofi_css="$(target_for wofi/style.css)"
-    colors_abs="$(target_for wofi/colors.css)"
-    mkdir -p "$WOFI_CONFIG_DIR"
-    if [[ ! -e "$wofi_css" ]]; then
-        sed "s|@COLORS_CSS@|$colors_abs|" "$SKELETON_DIR/wofi/style.css" > "$wofi_css"
-        echo "  created $wofi_css"
-    elif ! grep -qF "colors.css" "$wofi_css"; then
-        echo "  NOTE: $wofi_css exists — to theme it, add  @import url(\"$colors_abs\");  (absolute path required) and use @bg_base/@accent/@fg_text/..."
-    fi
+    # wofi and waybar pull their colors from a sibling colors.css via an
+    # absolute @import (GTK data blob, no base dir).
+    place_css_skeleton wofi/style.css
+    place_css_skeleton waybar/style.css
     place_skeleton dunst/dunstrc \
         '' \
         'nothing to do — dunst auto-loads the dunstrc.d/ drop-in'

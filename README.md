@@ -1,7 +1,7 @@
 # hypr-themes
 
 > One-command theme switcher for Hyprland. Define a theme once, apply it across
-> border, glow, wofi, dunst, hyprlock and wallpaper.
+> border, glow, wofi, waybar, dunst, hyprlock and wallpaper.
 
 ![shellcheck](https://github.com/thenullstackdeveloper/hypr-themes/actions/workflows/shellcheck.yml/badge.svg)
 ![tests](https://github.com/thenullstackdeveloper/hypr-themes/actions/workflows/tests.yml/badge.svg)
@@ -20,6 +20,7 @@ through each app's native include mechanism and are left untouched:
 | Hyprland  | `hypr/modules/theme.lua`              | `local theme = require("modules/theme")` |
 | hyprlock  | `hypr/hyprlock-theme.conf`            | `source = ~/.config/hypr/hyprlock-theme.conf` |
 | wofi      | `wofi/colors.css`                     | `@import url(".../colors.css")` (absolute) |
+| waybar    | `waybar/colors.css`                   | `@import url(".../colors.css")` (absolute) |
 | dunst     | `dunst/dunstrc.d/99-hypr-themes.conf` | drop-in — loaded automatically, no edit |
 | hyprpaper | `hypr/hyprpaper.conf`                 | *(fully managed — wallpaper only)*     |
 
@@ -62,9 +63,9 @@ theme. Run it without a terminal (pipe/CI) and it falls back to copying
 
 ## Why
 
-Changing the color palette of a Hyprland setup means editing five files by hand
-(`config.lua` border + glow, `hyprlock.conf`, `hyprpaper.conf`, `wofi/style.css`,
-`dunst/dunstrc`). Forget one and your visuals drift. hypr-themes keeps a single
+Changing the color palette of a Hyprland setup means editing half a dozen files by
+hand (`config.lua` border + glow, `hyprlock.conf`, `hyprpaper.conf`, `wofi/style.css`,
+`waybar/style.css`, `dunst/dunstrc`). Forget one and your visuals drift. hypr-themes keeps a single
 source of truth per theme and regenerates one small color partial per app — never
 your configs. One command. No drift, no clobbered settings.
 
@@ -106,7 +107,7 @@ kept and a warning is printed.
 ## Themes included
 
 Ten themes, all sharing the Catppuccin Mocha base — they only differ in the accent
-and the wallpaper, so they stay consistent across wofi, dunst and hyprlock.
+and the wallpaper, so they stay consistent across wofi, waybar, dunst and hyprlock.
 
 | Theme | Accent | Pairs with |
 |-------|--------|-----------|
