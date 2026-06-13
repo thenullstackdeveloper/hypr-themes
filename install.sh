@@ -12,15 +12,21 @@ SKELETON_DIR="$REPO_DIR/skeleton"
 USER_CONFIG_DIR="$HOME/.config/hypr-themes"
 BIN_DIR="$HOME/.local/bin"
 
+# Shared path helpers (target_for): map a skeleton path to its destination.
+# shellcheck source=/dev/null
+source "$REPO_DIR/lib/paths.sh"
+
 is_tty() { [[ -t 0 && -t 1 ]]; }
 
 # Place one base config: copy the skeleton if the user has none, otherwise leave
 # their file alone and (when it lacks the include) print how to wire it up. The
 # theme only ever writes the generated partials, never these base files.
-#   $1 skeleton-relative path   $2 target path
-#   $3 string proving the include is present ('' = none needed)   $4 how-to hint
+#   $1 skeleton-relative path (target derived via target_for)
+#   $2 string proving the include is present ('' = none needed)   $3 how-to hint
 place_skeleton() {
-    local src="$SKELETON_DIR/$1" target="$2" needle="$3" hint="$4"
+    local rel="$1" needle="$2" hint="$3"
+    local src="$SKELETON_DIR/$rel" target
+    target="$(target_for "$rel")"
     mkdir -p "$(dirname "$target")"
     if [[ ! -e "$target" ]]; then
         cp "$src" "$target"
@@ -35,16 +41,18 @@ deploy_skeletons() {
     : "${WOFI_CONFIG_DIR:=$HOME/.config/wofi}"
     : "${DUNST_CONFIG_DIR:=$HOME/.config/dunst}"
     echo "Base configs (yours — never overwritten):"
-    place_skeleton hypr/modules/config.lua "$HYPR_CONFIG_DIR/modules/config.lua" \
+    place_skeleton hypr/modules/config.lua \
         'require("modules/theme")' \
         'add  local theme = require("modules/theme")  and use theme.border_1/border_2/border_angle/glow'
     # shellcheck disable=SC2016  # $lock_* are literal hyprlock var names shown to the user
-    place_skeleton hypr/hyprlock.conf "$HYPR_CONFIG_DIR/hyprlock.conf" \
+    place_skeleton hypr/hyprlock.conf \
         'hyprlock-theme.conf' \
         'add  source = ~/.config/hypr/hyprlock-theme.conf  and use $lock_bg/$lock_text/$lock_accent/...'
     # wofi needs special handling: GTK loads the CSS as a data blob with no base
     # dir, so the @import must be absolute. Bake this machine's path in on copy.
-    local wofi_css="$WOFI_CONFIG_DIR/style.css" colors_abs="$WOFI_CONFIG_DIR/colors.css"
+    local wofi_css colors_abs
+    wofi_css="$(target_for wofi/style.css)"
+    colors_abs="$(target_for wofi/colors.css)"
     mkdir -p "$WOFI_CONFIG_DIR"
     if [[ ! -e "$wofi_css" ]]; then
         sed "s|@COLORS_CSS@|$colors_abs|" "$SKELETON_DIR/wofi/style.css" > "$wofi_css"
@@ -52,7 +60,7 @@ deploy_skeletons() {
     elif ! grep -qF "colors.css" "$wofi_css"; then
         echo "  NOTE: $wofi_css exists — to theme it, add  @import url(\"$colors_abs\");  (absolute path required) and use @bg_base/@accent/@fg_text/..."
     fi
-    place_skeleton dunst/dunstrc "$DUNST_CONFIG_DIR/dunstrc" \
+    place_skeleton dunst/dunstrc \
         '' \
         'nothing to do — dunst auto-loads the dunstrc.d/ drop-in'
 }

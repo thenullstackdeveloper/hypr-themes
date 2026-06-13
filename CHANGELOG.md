@@ -46,3 +46,9 @@ All notable changes to this project are documented here. Format based on
   untouched and the current wallpaper is kept.
 - All prompts are gated on a real TTY, so `install.sh`, keybinds and pipes keep
   the non-interactive behavior.
+
+### Internal
+- `lib/paths.sh`: single source of truth for generated-file paths (`target_for`,
+  `each_partial_target`, `each_base_target`). `install.sh` and `uninstall.sh` now
+  derive the partial/skeleton paths from `templates/` and `skeleton/` instead of
+  hardcoding them, so adding a target tool is just dropping a template.

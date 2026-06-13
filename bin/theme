@@ -49,16 +49,9 @@ THEME_VARS='$ACCENT_PRIMARY $ACCENT_RGB $BORDER_COLOR_1 $BORDER_COLOR_2 $BORDER_
 # scripts, keybinds and pipes keep the non-interactive behaviour.
 is_tty() { [[ -t 0 && -t 1 ]]; }
 
-# Map a template's tool dir (first path component) to its destination dir.
-target_for() {
-    local rel="$1" tool="${1%%/*}" sub="${1#*/}"
-    case "$tool" in
-        hypr)  echo "$HYPR_CONFIG_DIR/$sub" ;;
-        wofi)  echo "$WOFI_CONFIG_DIR/$sub" ;;
-        dunst) echo "$DUNST_CONFIG_DIR/$sub" ;;
-        *)     echo "$HOME/.config/$rel" ;;
-    esac
-}
+# Shared path helpers: target_for, each_partial_target, each_base_target.
+# shellcheck source=/dev/null
+source "$REPO_DIR/lib/paths.sh"
 
 cmd_list() {
     local f

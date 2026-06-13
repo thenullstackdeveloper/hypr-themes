@@ -5,6 +5,7 @@
 #
 set -euo pipefail
 
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 USER_CONFIG_DIR="$HOME/.config/hypr-themes"
 BIN_DIR="$HOME/.local/bin"
 
@@ -17,30 +18,31 @@ fi
 : "${WOFI_CONFIG_DIR:=$HOME/.config/wofi}"
 : "${DUNST_CONFIG_DIR:=$HOME/.config/dunst}"
 
-# 1. Remove the generated theme partials (tool-owned — safe to delete).
-removed=0
-for p in \
-    "$HYPR_CONFIG_DIR/modules/theme.lua" \
-    "$HYPR_CONFIG_DIR/hyprlock-theme.conf" \
-    "$WOFI_CONFIG_DIR/colors.css" \
-    "$DUNST_CONFIG_DIR/dunstrc.d/99-hypr-themes.conf"; do
-    [[ -e "$p" ]] && { rm -f "$p"; removed=$((removed + 1)); }
-done
+# Shared path helpers (each_partial_target / each_base_target) — the same
+# single source of truth bin/theme renders from.
+# shellcheck source=/dev/null
+source "$REPO_DIR/lib/paths.sh"
 
-# 2. Restore pristine .orig backups where present. These cover hyprpaper.conf
-#    (still fully managed) and any base config that existed before install.
+# 1. Generated partials (derived from templates/ — the same source bin/theme
+#    renders from). Restore the ones that overwrote a pre-existing config
+#    (.orig present, e.g. hyprpaper.conf); delete the ones created fresh.
+removed=0
 restored=0
-for base in \
-    "$HYPR_CONFIG_DIR/hyprpaper.conf" \
-    "$HYPR_CONFIG_DIR/hyprlock.conf" \
-    "$HYPR_CONFIG_DIR/modules/config.lua" \
-    "$WOFI_CONFIG_DIR/style.css" \
-    "$DUNST_CONFIG_DIR/dunstrc"; do
-    if [[ -f "$base.orig" ]]; then
-        mv "$base.orig" "$base"
-        restored=$((restored + 1))
+while IFS= read -r target; do
+    if [[ -f "$target.orig" ]]; then
+        mv "$target.orig" "$target"; restored=$((restored + 1))
+    elif [[ -e "$target" ]]; then
+        rm -f "$target"; removed=$((removed + 1))
     fi
-done
+done < <(each_partial_target)
+
+# 2. Base configs (derived from skeleton/): restore any pristine .orig left by
+#    an older version that overwrote them. Current versions never touch these.
+while IFS= read -r target; do
+    if [[ -f "$target.orig" ]]; then
+        mv "$target.orig" "$target"; restored=$((restored + 1))
+    fi
+done < <(each_base_target)
 
 # Remove the symlink and user config.
 rm -f "$BIN_DIR/theme"
